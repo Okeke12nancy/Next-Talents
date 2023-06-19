@@ -1,79 +1,49 @@
-// const ErrorResponse = require("../utils/errorResponse");
-// const asyncHandler = require("../middlewares/async");
+const CandidateService = require("../services/userService");
+const { UserUtils } = require("../utils/index.utils"); // Import the UserUtils class
+const User = require("../controllers/user");
+const userUtils = new UserUtils();
 
-// // @desc      Get all users
-// // @route     GET /api/v1/users
-// // @access    Private/Admin
+class CandidateController {
+  static async getAllCandidates(req, res) {
+    try {
+      const candidates = await CandidateService.getAllCandidates();
+      res.status(200).json(candidates);
+    } catch (error) {
+      res
+        .status(500)
+        .json({ error: "An error occurred while retrieving candidates" });
+    }
+  }
 
-// // controllers/userController.js
-// const UserService = require("../services/userService");
+  static async getCandidateById(req, res) {
+    const { id } = req.params;
+    try {
+      const candidate = await CandidateService.getCandidateById(id);
+      if (!candidate) {
+        return res.status(404).json({ error: "Candidate not found" });
+      }
+      res.status(200).json(candidate);
+    } catch (error) {
+      res
+        .status(500)
+        .json({ error: "An error occurred while retrieving the candidate" });
+    }
+  }
 
-// class UserController {
-//   getUsers = asyncHandler(async (req, res, next) => {
-//     res.status(200).json(await UserService.getUsers());
-//   });
+  static async searchUsers(req, res) {
+    try {
+      const filter = req.body; // or req.query, depending on your implementation
 
-//   // @desc      Get single user
-//   // @route     GET /api/v1/users/:id
-//   // @access    Private/Admin
-//   // controllers/userController.js
+      const results = await userUtils.search(User, filter);
 
-//   getUser = asyncHandler(async (req, res, next) => {
-//     const user = await UserService.getUserById(req.params.id);
+      return res.json(results);
+    } catch (error) {
+      console.error(error);
+      return res
+        .status(500)
+        .json({ error: "An error occurred while searching for users" });
+    }
+  }
+}
 
-//     if (!user) {
-//       return next(
-//         new ErrorResponse(`No user with id of ${req.params.id}`, 404)
-//       );
-//     }
-
-//     res.status(200).json({
-//       success: true,
-//       data: user,
-//     });
-//   });
-
-//   // @desc      Create user
-//   // @route     POST /api/v1/users
-//   // @access    Private/Admin
-//   // controllers/userController.js
-
-//   createUser = asyncHandler(async (req, res, next) => {
-//     const user = await UserService.createUser(req.body);
-
-//     res.status(201).json({
-//       success: true,
-//       data: user,
-//     });
-//   });
-
-//   // @desc      Update user
-//   // @route     PUT /api/v1/users/:id
-//   // @access    Private/Admin
-//   // controllers/userController.js
-
-//   updateUser = asyncHandler(async (req, res, next) => {
-//     const user = await UserService.updateUser(req.params.id, req.body);
-
-//     res.status(200).json({
-//       success: true,
-//       data: user,
-//     });
-//   });
-
-//   // @desc      Delete user
-//   // @route     DELETE /api/v1/users/:id
-//   // @access    Private/Admin
-//   // controllers/userController.js
-
-//   deleteUser = asyncHandler(async (req, res, next) => {
-//     await UserService.deleteUser(req.params.id);
-
-//     res.status(200).json({
-//       success: true,
-//       data: {},
-//     });
-//   });
-// }
-
-// module.exports = UserController;
+module.exports = CandidateController;

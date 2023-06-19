@@ -16,7 +16,7 @@ const AuthService = require("../services/authServices");
 class AuthController {
   register = asyncHandler(async (req, res, next) => {
     const { fullName, email, password, role, description } = req.body;
-    console.log("name");
+    // console.log("name");
     const user = await AuthService.registerUser(
       req, // here
       fullName,

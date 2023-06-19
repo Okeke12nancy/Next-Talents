@@ -1,24 +1,14 @@
-// const express = require("express");
-// const {
-//   getUsers,
-//   getUser,
-//   createUser,
-//   updateUser,
-//   deleteUser,
-// } = require("../controllers/user");
+const express = require("express");
+const router = express.Router();
+const CandidateController = require("../controllers/user");
+const { searchUsers } = require("../controllers/user");
 
-// const User = require("../models/users");
+// Public route for retrieving brief information about all candidates
+router.get("/", CandidateController.getAllCandidates);
 
-// const router = express.Router({ mergeParams: true });
+// Public route for retrieving detailed information about a specific candidate
+router.get("/:id", CandidateController.getCandidateById);
 
-// const advancedResults = require("../middlewares/advancedResults");
-// const { protect, authorize } = require("../middlewares/auth");
+router.post("/search", searchUsers);
 
-// router.use(protect);
-// router.use(authorize("admin"));
-
-// router.route("/").get(advancedResults(User), getUsers).post(createUser);
-
-// router.route("/:id").get(getUser).put(updateUser).delete(deleteUser);
-
-// module.exports = router;
+module.exports = router;

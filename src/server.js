@@ -6,14 +6,13 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const errorHandler = require("./middlewares/errorMiddlewares");
 const cookieParser = require("cookie-parser");
-const session = require("express-session");
 const authRoute = require("./routes/authRoute");
 const connectDB = require("./configs/databaseConfig");
 const cookieSession = require("cookie-session");
 const path = require("path");
-
-// Initialize Passport
-require("./configs/passport");
+const userRoute = require("./routes/userRoutes");
+const resumeRoute = require("./routes/resume");
+const profileRoute = require("./routes/profile");
 
 require("colors");
 const logger = require("./configs/logger.config");
@@ -41,21 +40,12 @@ app.use(helmet());
 // Enable CORS
 app.use(cors());
 
-app.use("/api/v1/auth", authRoute);
-
 app.set("view engine", "ejs");
-
-// app.use(
-//   session({
-//     resave: false,
-//     saveUninitialized: true,
-//     secret: "SECRET",
-//   })
-// );
+app.set("views", path.join(__dirname, "./views"));
 
 app.use(
   cookieSession({
-    name: "tuto-session",
+    name: "google-auth-session",
     keys: ["key1", "key2"],
   })
 );
@@ -64,6 +54,10 @@ app.use(
 
 app.use(passport.initialize());
 app.use(passport.session());
+app.use("/api/v1/auth", authRoute);
+app.use("/api/v1/user", userRoute);
+app.use("/api/v1/resume", resumeRoute);
+app.use("/api/v1/profile", profileRoute);
 
 passport.serializeUser(function (user, cb) {
   cb(null, user);
@@ -74,57 +68,11 @@ passport.deserializeUser(function (obj, cb) {
 });
 
 require("./configs/passport");
+
 require("dotenv").config();
 
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "views", "pages", "index.html"));
-});
-
-app.get("/success", (req, res) => {
-  res.render("pages/success", {
-    // name: req.user.displayName,
-    pic: req.user.photos[0].value,
-    email: req.user.emails[0].value,
-  });
-});
-app.get("/error", (req, res) => res.send("error logging in"));
-
-app.get(
-  "/auth/google",
-  passport.authenticate("google", { scope: ["profile", "email"] })
-);
-
-app.get(
-  "/candidate/auth/google",
-  function (req, res, next) {
-    process.env.user_type = "candidate";
-    next();
-  },
-  passport.authenticate("google", { scope: ["profile", "email"] })
-);
-
-app.get(
-  "/employer/auth/google",
-  function (req, res, next) {
-    process.env.user_type = "employer";
-    next();
-  },
-  passport.authenticate("google", { scope: ["profile", "email"] })
-);
-
-app.get(
-  "/auth/google/callback",
-  passport.authenticate("google", { failureRedirect: "/error" }),
-  function (req, res) {
-    // Successful authentication, redirect success.
-    res.redirect("/success");
-  }
-);
-
-app.get("/logout", (req, res) => {
-  req.session = null;
-  req.logout();
-  res.redirect("/");
 });
 
 app.use(errorHandler);
